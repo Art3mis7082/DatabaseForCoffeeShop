@@ -1,0 +1,290 @@
+-- =====================================================
+-- PROYECTO: CAFETERÍA
+-- ORACLE DATABASE 26ai
+-- Authors: Almaraz García Beatriz, Martínez Ojeda Jonhatan Alexis, Raya Ramírez Angel Adrián
+-- Description: Scrip para la creación de las tablas necesarias para el sistema.
+-- =====================================================
+
+-- =====================================================
+-- TABLA: EMPLEADO
+-- =====================================================
+CREATE TABLE EMPLEADO (
+    ID_EMPLEADO        NUMBER GENERATED ALWAYS AS IDENTITY,
+    NOMBRE             VARCHAR2(50) NOT NULL,
+    AP_PATERNO         VARCHAR2(50) NOT NULL,
+    AP_MATERNO         VARCHAR2(50),
+    FECHA_CONTRATACION DATE NOT NULL,
+    RFC                VARCHAR2(13) NOT NULL,
+    CORREO             VARCHAR2(100) NOT NULL,
+    TELEFONO           VARCHAR2(15),
+    ACTIVO             CHAR(1) DEFAULT 'S',
+
+    CONSTRAINT PK_EMPLEADO PRIMARY KEY (ID_EMPLEADO),
+    CONSTRAINT UQ_EMPLEADO_RFC UNIQUE (RFC),
+    CONSTRAINT UQ_EMPLEADO_CORREO UNIQUE (CORREO),
+    CONSTRAINT CK_EMPLEADO_ACTIVO CHECK (ACTIVO IN ('S', 'N'))
+);
+
+-- =====================================================
+-- TABLA: CLIENTE
+-- =====================================================
+CREATE TABLE CLIENTE (
+    ID_CLIENTE   NUMBER GENERATED ALWAYS AS IDENTITY,
+    NOMBRE       VARCHAR2(50) NOT NULL,
+    AP_PATERNO   VARCHAR2(50) NOT NULL,
+    AP_MATERNO   VARCHAR2(50),
+    CORREO       VARCHAR2(100),
+    TELEFONO     VARCHAR2(15),
+    FECHA_REGISTRO DATE DEFAULT SYSDATE,
+
+    CONSTRAINT PK_CLIENTE PRIMARY KEY (ID_CLIENTE),
+    CONSTRAINT UQ_CLIENTE_CORREO UNIQUE (CORREO)
+);
+
+-- =====================================================
+-- TABLA: CATEGORIA_PRODUCTO
+-- =====================================================
+CREATE TABLE CATEGORIA_PRODUCTO (
+    ID_CATEGORIA NUMBER GENERATED ALWAYS AS IDENTITY,
+    NOMBRE       VARCHAR2(30) NOT NULL,
+
+    CONSTRAINT PK_CATEGORIA_PRODUCTO PRIMARY KEY (ID_CATEGORIA),
+    CONSTRAINT UQ_CATEGORIA_PRODUCTO UNIQUE (NOMBRE)
+);
+
+-- =====================================================
+-- TABLA: PRODUCTO
+-- =====================================================
+CREATE TABLE PRODUCTO (
+    ID_PRODUCTO    NUMBER GENERATED ALWAYS AS IDENTITY,
+    ID_CATEGORIA   NUMBER NOT NULL,
+    NOMBRE         VARCHAR2(100) NOT NULL,
+    PRECIO_BASE    NUMBER(8,2) NOT NULL,
+    ACTIVO         CHAR(1) DEFAULT 'S',
+    USA_LECHE      CHAR(1) DEFAULT 'N',
+    CANTIDAD_LECHE_BASE NUMBER(10,2),
+
+    CONSTRAINT PK_PRODUCTO PRIMARY KEY (ID_PRODUCTO),
+
+    CONSTRAINT FK_PRODUCTO_CATEGORIA
+        FOREIGN KEY (ID_CATEGORIA)
+        REFERENCES CATEGORIA_PRODUCTO(ID_CATEGORIA),
+
+    CONSTRAINT CK_PRODUCTO_PRECIO
+        CHECK (PRECIO_BASE >= 0),
+
+    CONSTRAINT CK_PRODUCTO_ACTIVO
+        CHECK (ACTIVO IN ('S', 'N')),
+    
+    CONSTRAINT CK_PRODUCTO_USA_LECHE
+        CHECK (USA_LECHE IN ('S', 'N'))
+);
+
+-- =====================================================
+-- TABLA: TAMAÑO
+-- =====================================================
+CREATE TABLE TAMANO (
+    ID_TAMANO         NUMBER GENERATED ALWAYS AS IDENTITY,
+    NOMBRE            VARCHAR2(30) NOT NULL,
+    ONZAS             NUMBER(4,1),
+    INCREMENTO_PRECIO NUMBER(6,2) DEFAULT 0,
+    FACTOR_MULTIPLICADOR NUMBER(3,2),
+
+    CONSTRAINT PK_TAMANO PRIMARY KEY (ID_TAMANO),
+    CONSTRAINT UQ_TAMANO UNIQUE (NOMBRE)
+);
+
+-- =====================================================
+-- TABLA: INSUMO
+-- =====================================================
+CREATE TABLE INSUMO (
+    ID_INSUMO           NUMBER GENERATED ALWAYS AS IDENTITY,
+    NOMBRE              VARCHAR2(100) NOT NULL,
+    CANTIDAD_DISPONIBLE NUMBER(10,2) NOT NULL,
+    UNIDAD_MEDIDA       VARCHAR2(20) NOT NULL,
+    COSTO_UNITARIO      NUMBER(10,2) NOT NULL,
+    STOCK_MINIMO        NUMBER(10,2) DEFAULT 0,
+
+    CONSTRAINT PK_INSUMO PRIMARY KEY (ID_INSUMO),
+    CONSTRAINT UQ_INSUMO UNIQUE (NOMBRE),
+
+    CONSTRAINT CK_INSUMO_CANTIDAD
+        CHECK (CANTIDAD_DISPONIBLE >= 0),
+
+    CONSTRAINT CK_INSUMO_COSTO
+        CHECK (COSTO_UNITARIO >= 0)
+);
+
+-- =====================================================
+-- TABLA: TIPO_LECHE
+-- =====================================================
+CREATE TABLE TIPO_LECHE (
+    ID_LECHE       NUMBER GENERATED ALWAYS AS IDENTITY,
+    NOMBRE         VARCHAR2(50) NOT NULL,
+    COSTO_EXTRA    NUMBER(6,2) DEFAULT 0,
+    ID_INSUMO NUMBER,
+    
+    CONSTRAINT PK_TIPO_LECHE PRIMARY KEY (ID_LECHE),
+    CONSTRAINT UQ_TIPO_LECHE UNIQUE (NOMBRE),
+    CONSTRAINT FK_LECHE_INSUMO
+        FOREIGN KEY (ID_INSUMO)
+        REFERENCES INSUMO(ID_INSUMO)
+);
+
+-- =====================================================
+-- TABLA: TEMPERATURA
+-- =====================================================
+CREATE TABLE TEMPERATURA (
+    ID_TEMPERATURA NUMBER GENERATED ALWAYS AS IDENTITY,
+    NOMBRE         VARCHAR2(20) NOT NULL,
+
+    CONSTRAINT PK_TEMPERATURA PRIMARY KEY (ID_TEMPERATURA),
+    CONSTRAINT UQ_TEMPERATURA UNIQUE (NOMBRE)
+);
+
+-- =====================================================
+-- TABLA: EXTRA
+-- =====================================================
+CREATE TABLE EXTRA (
+    ID_EXTRA      NUMBER GENERATED ALWAYS AS IDENTITY,
+    NOMBRE        VARCHAR2(50) NOT NULL,
+    COSTO_EXTRA   NUMBER(6,2) DEFAULT 0,
+
+    CONSTRAINT PK_EXTRA PRIMARY KEY (ID_EXTRA),
+    CONSTRAINT UQ_EXTRA UNIQUE (NOMBRE)
+);
+
+-- =====================================================
+-- TABLA: PRODUCTO_INSUMO
+-- =====================================================
+CREATE TABLE PRODUCTO_INSUMO (
+    ID_PRODUCTO      NUMBER NOT NULL,
+    ID_INSUMO        NUMBER NOT NULL,
+    CANTIDAD_USADA   NUMBER(10,2) NOT NULL,
+
+    CONSTRAINT PK_PRODUCTO_INSUMO
+        PRIMARY KEY (ID_PRODUCTO, ID_INSUMO),
+
+    CONSTRAINT FK_PI_PRODUCTO
+        FOREIGN KEY (ID_PRODUCTO)
+        REFERENCES PRODUCTO(ID_PRODUCTO),
+
+    CONSTRAINT FK_PI_INSUMO
+        FOREIGN KEY (ID_INSUMO)
+        REFERENCES INSUMO(ID_INSUMO),
+
+    CONSTRAINT CK_PI_CANTIDAD
+        CHECK (CANTIDAD_USADA > 0)
+);
+
+-- =====================================================
+-- TABLA: PEDIDO
+-- =====================================================
+CREATE TABLE PEDIDO (
+    ID_PEDIDO      NUMBER GENERATED ALWAYS AS IDENTITY,
+    ID_CLIENTE     NUMBER,
+    ID_EMPLEADO    NUMBER NOT NULL,
+    FECHA_HORA     DATE DEFAULT SYSDATE,
+    TOTAL          NUMBER(10,2) DEFAULT 0,
+
+    CONSTRAINT PK_PEDIDO PRIMARY KEY (ID_PEDIDO),
+
+    CONSTRAINT FK_PEDIDO_CLIENTE
+        FOREIGN KEY (ID_CLIENTE)
+        REFERENCES CLIENTE(ID_CLIENTE),
+
+    CONSTRAINT FK_PEDIDO_EMPLEADO
+        FOREIGN KEY (ID_EMPLEADO)
+        REFERENCES EMPLEADO(ID_EMPLEADO),
+
+    CONSTRAINT CK_PEDIDO_TOTAL
+        CHECK (TOTAL >= 0)
+);
+
+-- =====================================================
+-- TABLA: DETALLE_PEDIDO
+-- =====================================================
+CREATE TABLE DETALLE_PEDIDO (
+    ID_DETALLE       NUMBER GENERATED ALWAYS AS IDENTITY,
+    ID_PEDIDO        NUMBER NOT NULL,
+    ID_PRODUCTO      NUMBER NOT NULL,
+    ID_TAMANO        NUMBER,
+    ID_LECHE         NUMBER,
+    ID_TEMPERATURA   NUMBER,
+    CANTIDAD         NUMBER NOT NULL,
+    PRECIO_UNITARIO  NUMBER(8,2) NOT NULL,
+    SUBTOTAL         NUMBER(10,2) NOT NULL,
+
+    CONSTRAINT PK_DETALLE_PEDIDO PRIMARY KEY (ID_DETALLE),
+
+    CONSTRAINT FK_DP_PEDIDO
+        FOREIGN KEY (ID_PEDIDO)
+        REFERENCES PEDIDO(ID_PEDIDO),
+
+    CONSTRAINT FK_DP_PRODUCTO
+        FOREIGN KEY (ID_PRODUCTO)
+        REFERENCES PRODUCTO(ID_PRODUCTO),
+
+    CONSTRAINT FK_DP_TAMANO
+        FOREIGN KEY (ID_TAMANO)
+        REFERENCES TAMANO(ID_TAMANO),
+
+    CONSTRAINT FK_DP_LECHE
+        FOREIGN KEY (ID_LECHE)
+        REFERENCES TIPO_LECHE(ID_LECHE),
+
+    CONSTRAINT FK_DP_TEMPERATURA
+        FOREIGN KEY (ID_TEMPERATURA)
+        REFERENCES TEMPERATURA(ID_TEMPERATURA),
+
+    CONSTRAINT CK_DP_CANTIDAD
+        CHECK (CANTIDAD > 0),
+
+    CONSTRAINT CK_DP_PRECIO
+        CHECK (PRECIO_UNITARIO >= 0),
+
+    CONSTRAINT CK_DP_SUBTOTAL
+        CHECK (SUBTOTAL >= 0)
+);
+
+-- =====================================================
+-- TABLA: DETALLE_EXTRA
+-- =====================================================
+CREATE TABLE DETALLE_EXTRA (
+    ID_DETALLE   NUMBER NOT NULL,
+    ID_EXTRA     NUMBER NOT NULL,
+
+    CONSTRAINT PK_DETALLE_EXTRA
+        PRIMARY KEY (ID_DETALLE, ID_EXTRA),
+
+    CONSTRAINT FK_DE_EXTRA_DETALLE
+        FOREIGN KEY (ID_DETALLE)
+        REFERENCES DETALLE_PEDIDO(ID_DETALLE),
+
+    CONSTRAINT FK_DE_EXTRA
+        FOREIGN KEY (ID_EXTRA)
+        REFERENCES EXTRA(ID_EXTRA)
+);
+
+-- =====================================================
+-- TABLA: SOLICITUD_INSUMO
+-- =====================================================
+CREATE TABLE SOLICITUD_INSUMO (
+    ID_SOLICITUD         NUMBER GENERATED ALWAYS AS IDENTITY,
+    ID_INSUMO            NUMBER NOT NULL,
+    FECHA_SOLICITUD      DATE DEFAULT SYSDATE,
+    CANTIDAD_SOLICITADA  NUMBER(10,2) NOT NULL,
+    ESTADO               VARCHAR2(20) DEFAULT 'PENDIENTE',
+
+    CONSTRAINT PK_SOLICITUD_INSUMO PRIMARY KEY (ID_SOLICITUD),
+
+    CONSTRAINT FK_SI_INSUMO
+        FOREIGN KEY (ID_INSUMO)
+        REFERENCES INSUMO(ID_INSUMO),
+
+    CONSTRAINT CK_SI_CANTIDAD
+        CHECK (CANTIDAD_SOLICITADA > 0),
+
+    CONSTRAINT CK_SI_ESTADO
+        CHECK (ESTADO IN ('PENDIENTE', 'RECIBIDA'))
+);
