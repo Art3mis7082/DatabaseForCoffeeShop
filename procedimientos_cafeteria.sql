@@ -20,7 +20,7 @@ CREATE OR REPLACE PROCEDURE REGISTRAR_PEDIDO (
 )
 IS
     V_ID_PEDIDO NUMBER;
-    V_ID_DETALLLE NUMBER;
+    V_ID_DETALLE NUMBER;
     V_PRECIO_BASE NUMBER(8,2);
     V_PRECIO_EXTRAS NUMBER(8,2) := 0;
     V_PRECIO_TOTAL NUMBER(8,2);
@@ -96,6 +96,15 @@ BEGIN
     RETURNING ID_DETALLE
     INTO V_ID_DETALLE;
     
+    --CALCULAR TOTAL DEL PEDIDO
+    UPDATE PEDIDO
+    SET TOTAL = (
+        SELECT NVL(SUM(SUBTOTAL),0)
+        FROM DETALLE_PEDIDO
+        WHERE ID_PEDIDO = V_ID_PEDIDO
+        )
+    WHERE ID_PEDIDO = V_ID_PEDIDO;
+
     --INSERTAR EXTRAS
     IF P_EXTRAS IS NOT NULL THEN
         FOR REC IN (
@@ -114,21 +123,83 @@ END;
 /
 --NOTA: El procedimiento no descuenta los insumos de los extras. Podría hacerlo pero ya me duele la cabeza. :d          
 
---PARA EJECUTARLO (ejemplo)
+--==========================
+-- EJEMPLOS PARA EJECUTARLO
+--==========================
 BEGIN REGISTRAR_PEDIDO(
-        1, -- CLIENTE
-        1, -- EMPLEADO
-        1, -- PRODUCTO
-        2, -- TAMAÑO
-        1, -- LECHE
-        1, -- TEMPERATURA
-        2  -- CANTIDAD
-        '1,2' -- EXTRAS
+    1,      --CLIENTE
+    1,      --EMPLEADO
+    1,      --PRODUCTO
+    1,      --TAMAÑO
+    1,      --TIPO DE LECHE
+    1,      --FRIO O CALIENTE
+    1,      --CANTIDAD
+    NULL   --EXTRAS
     );
-
 END;
 /
 
--- =====================================================
--- PROCEDURE: YA NO SE ME OCURRIO OTRO
--- =====================================================
+BEGIN REGISTRAR_PEDIDO(
+    1,      --CLIENTE
+    1,      --EMPLEADO
+    2,      --PRODUCTO
+    2,      --TAMAÑO
+    2,      --TIPO DE LECHE
+    2,      --FRIO O CALIENTE
+    2,      --CANTIDAD
+    '1,3'   --EXTRAS
+    );
+END;
+/
+
+BEGIN REGISTRAR_PEDIDO(
+    1,      --CLIENTE
+    1,      --EMPLEADO
+    3,      --PRODUCTO
+    3,      --TAMAÑO
+    2,      --TIPO DE LECHE
+    1,      --FRIO O CALIENTE
+    3,      --CANTIDAD
+    '1,2,3'   --EXTRAS
+    );
+END;
+/
+
+BEGIN REGISTRAR_PEDIDO(
+    1,      --CLIENTE
+    1,      --EMPLEADO
+    4,      --PRODUCTO
+    1,      --TAMAÑO
+    2,      --TIPO DE LECHE
+    2,      --FRIO O CALIENTE
+    4,      --CANTIDAD
+    '1,2,3,4'   --EXTRAS
+    );
+END;
+/
+
+BEGIN REGISTRAR_PEDIDO(
+    1,      --CLIENTE
+    1,      --EMPLEADO
+    5,      --PRODUCTO
+    2,      --TAMAÑO
+    3,      --TIPO DE LECHE (ESTE DEBE DAR ERROR PORQUE NO HAY SUFICIENTE STOCK)
+    1,      --FRIO O CALIENTE
+    5,      --CANTIDAD
+    '1,2,3,4,5'   --EXTRAS
+    );
+END;
+/
+
+BEGIN REGISTRAR_PEDIDO(
+    1,      --CLIENTE
+    1,      --EMPLEADO
+    6,      --PRODUCTO
+    3,      --TAMAÑO
+    1,      --TIPO DE LECHE
+    2,      --FRIO O CALIENTE
+    6,      --CANTIDAD
+    '1'   --EXTRAS
+    );
+END;
+/
