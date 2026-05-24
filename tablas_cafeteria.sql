@@ -2,7 +2,7 @@
 -- PROYECTO: CAFETERÍA
 -- ORACLE DATABASE 26ai
 -- Authors: Almaraz García Beatriz, Martínez Ojeda Jonhatan Alexis, Raya Ramírez Angel Adrián
--- Description: Scrip para la creación de las tablas necesarias para el sistema.
+-- Description: Script para la creación de las tablas necesarias para el sistema.
 -- =====================================================
 
 -- =====================================================
