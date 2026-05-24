@@ -1,3 +1,9 @@
+-- =====================================================
+-- PROYECTO: CAFETERÍA
+-- ORACLE DATABASE 26ai
+-- Authors: Almaraz García Beatriz, Martínez Ojeda Jonhatan Alexis, Raya Ramírez Angel Adrián
+-- Description: Scripts que nos servirán para probar nuestras tablas, triggers, procedures y views. 
+-- =====================================================
 --Script para elimianr tablas (para pruebas)
 DROP TABLE DETALLE_EXTRA CASCADE CONSTRAINTS;
 
