@@ -2,7 +2,7 @@
 -- PROYECTO: CAFETERÍA
 -- ORACLE DATABASE 26ai
 -- Authors: Almaraz García Beatriz, Martínez Ojeda Jonhatan Alexis, Raya Ramírez Angel Adrián
--- Description: Scrip que contiene un pequeño dataset de prueba, 
+-- Description: Script que contiene un pequeño dataset de prueba, 
 -- =====================================================
 
 -- =====================================================
