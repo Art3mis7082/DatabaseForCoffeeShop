@@ -2,7 +2,7 @@
 -- PROYECTO: CAFETERÍA
 -- ORACLE DATABASE 26ai
 -- Authors: Almaraz García Beatriz, Martínez Ojeda Jonhatan Alexis, Raya Ramírez Angel Adrián
--- Description: Scrip que contiene procedimientos almacenados necesarios para el correcto funcionamiento del sistema.
+-- Description: Script que contiene procedimientos almacenados necesarios para el correcto funcionamiento del sistema.
 -- =====================================================
 
 -- =====================================================
@@ -41,11 +41,14 @@ BEGIN
     WHERE ID_TAMANO = P_ID_TAMANO;
     
     --OBTENER COSTO DE LECHE
-    SELECT COSTO_EXTRA
-    INTO V_COSTO_LECHE
-    FROM TIPO_LECHE
-    WHERE ID_LECHE = P_ID_LECHE;
-    
+    IF P_ID_LECHE IS NOT NULL THEN
+        SELECT COSTO_EXTRA
+        INTO V_COSTO_LECHE
+        FROM TIPO_LECHE
+        WHERE ID_LECHE = P_ID_LECHE;
+    ELSE
+        V_COSTO_LECHE := 0;
+    END IF;
     --CALCULAR PRECIO DE LOS EXTRAS
     IF P_EXTRAS IS NOT NULL THEN
         FOR REC IN (
@@ -121,11 +124,12 @@ BEGIN
     COMMIT;
 END;
 /
---NOTA: El procedimiento no descuenta los insumos de los extras. Podría hacerlo pero ya me duele la cabeza. :d          
+--NOTA: El procedimiento no descuenta los insumos de los extras.      
 
 --==========================
 -- EJEMPLOS PARA EJECUTARLO
 --==========================
+/*
 BEGIN REGISTRAR_PEDIDO(
     1,      --CLIENTE
     1,      --EMPLEADO
@@ -203,3 +207,4 @@ BEGIN REGISTRAR_PEDIDO(
     );
 END;
 /
+*/
