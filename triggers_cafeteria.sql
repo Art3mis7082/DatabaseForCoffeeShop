@@ -2,7 +2,7 @@
 -- PROYECTO: CAFETERÍA
 -- ORACLE DATABASE 26ai
 -- Authors: Almaraz García Beatriz, Martínez Ojeda Jonhatan Alexis, Raya Ramírez Angel Adrián
--- Description: Scrip que contiene triggers necesarios para el correcto funcionamiento del sistema.
+-- Description: Script que contiene triggers necesarios para el correcto funcionamiento del sistema.
 -- =====================================================
 
 -- =====================================================
